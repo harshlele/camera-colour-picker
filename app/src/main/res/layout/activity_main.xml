@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.hllabs.cameracolourpicker.MainActivity">
+
+    <com.otaliastudios.cameraview.CameraView
+        android:id="@+id/camera"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:keepScreenOn="true"
+        app:cameraFacing="back"
+        app:cameraFlash="off"
+        app:cameraGrid="off"
+        app:cameraSessionType="picture"
+        app:cameraCropOutput="false"
+        app:cameraJpegQuality="100"
+        app:cameraWhiteBalance="auto"
+        app:cameraHdr="off"/>
+
+    <RelativeLayout
+        android:id="@+id/control_layout"
+        android:layout_gravity="bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:alpha="0.7"
+        android:background="@color/colorPrimary">
+
+        <TextView
+            android:id="@+id/text_color_hex"
+            android:layout_margin="8dp"
+            android:layout_marginBottom="0dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textColor="@android:color/white"
+            />
+
+        <TextView
+            android:id="@+id/text_copy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hex values are automatically copied to your clipboard"
+            android:layout_margin="4dp"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:layout_below="@id/text_color_hex"
+            />
+
+        <TextView
+            android:id="@+id/text_color_rgb"
+            android:layout_margin="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_alignBaseline="@+id/text_color_hex"
+            android:layout_toEndOf="@+id/text_color_hex"
+            android:textColor="@android:color/white"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/text_color_hsv"
+            android:layout_margin="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_alignBaseline="@+id/text_color_rgb"
+            android:layout_toEndOf="@+id/text_color_rgb"
+            android:textColor="@android:color/white"
+            android:text="" />
+
+    </RelativeLayout>
+</FrameLayout>
