@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //listener to toggle between front and back camera
         switchCamBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //listener to toggle flash
         flashBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -129,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //white balance spinner listener
         whiteBalanceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
