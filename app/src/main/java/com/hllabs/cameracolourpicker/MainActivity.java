@@ -1,5 +1,8 @@
 package com.hllabs.cameracolourpicker;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
@@ -111,19 +114,23 @@ public class MainActivity extends AppCompatActivity {
 
         //get pixel at co-ordinates, and convert it into hex codes
         int pixel = outputBitmap.getPixel(scaledX,scaledY);
+
+
         String hexColor = String.format("#%06X", (0xFFFFFF & pixel));
-
         String rgbColor = "RGB(" + Color.red(pixel) + "," + Color.green(pixel) + "," + Color.blue(pixel) + ")";
-
         float[] hsv = new float[3];
         Color.colorToHSV(pixel,hsv);
         String hsvColor = "HSV(" + (int)hsv[0] + "," + (int)hsv[1] + "," + (int)hsv[2] + ")";
-
 
         //set color text
         colorValHexText.setText(hexColor);
         colorValRgbText.setText(rgbColor);
         colorValHsvText.setText(hsvColor);
+
+        //copy hex value to clipboard
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("color", hexColor);
+        clipboard.setPrimaryClip(clip);
 
         //change colour of layout and status bar
         controlLayout.setBackgroundColor(pixel);
