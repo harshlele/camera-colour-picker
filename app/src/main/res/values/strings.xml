@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Camera Colour Picker</string>
+
+    <string-array name="wb_array">
+        <item>White Balance(Auto)</item>
+        <item>Incandescent</item>
+        <item>Fluorescent</item>
+        <item>Daylight</item>
+        <item>Cloudy</item>
+    </string-array>
+
 </resources>

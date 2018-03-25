@@ -1,25 +1,34 @@
 package com.hllabs.cameracolourpicker;
 
+import android.animation.ValueAnimator;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Build;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v8.renderscript.RenderScript;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
+import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.otaliastudios.cameraview.CameraView;
+import com.otaliastudios.cameraview.Facing;
+import com.otaliastudios.cameraview.Flash;
 import com.otaliastudios.cameraview.Frame;
 import com.otaliastudios.cameraview.FrameProcessor;
 import com.otaliastudios.cameraview.Gesture;
 import com.otaliastudios.cameraview.GestureAction;
+import com.otaliastudios.cameraview.WhiteBalance;
 
 import io.github.silvaren.easyrs.tools.Nv21Image;
 
@@ -37,7 +46,12 @@ public class MainActivity extends AppCompatActivity {
     //views
     private RelativeLayout controlLayout;
     private TextView colorValHexText,colorValRgbText,colorValHsvText;
+    private ImageButton switchCamBtn, flashBtn;
+    private Spinner whiteBalanceSpinner;
 
+    private Facing currentCameraFacing = Facing.BACK;
+    private Flash currentFlash = Flash.OFF;
+    private WhiteBalance currentWb = WhiteBalance.AUTO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
         colorValRgbText = findViewById(R.id.text_color_rgb);
         colorValHsvText = findViewById(R.id.text_color_hsv);
         cameraView = findViewById(R.id.camera);
+        switchCamBtn = findViewById(R.id.btn_switch_camera);
+        flashBtn = findViewById(R.id.btn_flash);
+        whiteBalanceSpinner = findViewById(R.id.wb_spinner);
+
 
         //map gestures
         cameraView.mapGesture(Gesture.PINCH, GestureAction.ZOOM);
@@ -80,6 +98,64 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return false;
             }
+        });
+
+        switchCamBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(currentCameraFacing == Facing.BACK){
+                    currentCameraFacing = Facing.FRONT;
+                }
+                else {
+                    currentCameraFacing = Facing.BACK;
+                }
+
+                cameraView.setFacing(currentCameraFacing);
+            }
+        });
+
+        flashBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(currentFlash == Flash.OFF){
+                    currentFlash = Flash.TORCH;
+                    flashBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_flash_off_24dp,getTheme()));
+                }
+                else{
+                    currentFlash = Flash.OFF;
+                    flashBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_flash_on_24dp,getTheme()));
+                }
+                cameraView.setFlash(currentFlash);
+            }
+        });
+
+        whiteBalanceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                ((TextView) view).setTextColor(Color.WHITE);
+                String selection = adapterView.getItemAtPosition(i).toString();
+                switch (selection){
+                    case "Incandescent":
+                        currentWb = WhiteBalance.INCANDESCENT;
+                        break;
+                    case "Fluorescent":
+                        currentWb = WhiteBalance.FLUORESCENT;
+                        break;
+                    case "Daylight":
+                        currentWb = WhiteBalance.DAYLIGHT;
+                        break;
+                    case "Cloudy":
+                        currentWb = WhiteBalance.CLOUDY;
+                        break;
+                    default:
+                        currentWb = WhiteBalance.AUTO;
+                        break;
+                }
+                cameraView.setWhiteBalance(currentWb);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {}
         });
 
     }
@@ -132,11 +208,25 @@ public class MainActivity extends AppCompatActivity {
         ClipData clip = ClipData.newPlainText("color", hexColor);
         clipboard.setPrimaryClip(clip);
 
-        //change colour of layout and status bar
-        controlLayout.setBackgroundColor(pixel);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(pixel);
-        }
+        //get current background colour
+        int currentColor = Color.TRANSPARENT;
+        Drawable background = controlLayout.getBackground();
+        if (background instanceof ColorDrawable)
+            currentColor = ((ColorDrawable) background).getColor();
+        //animate to new colour
+        ValueAnimator valueAnimator = ValueAnimator.ofArgb(currentColor, pixel);
+        valueAnimator.setDuration(500);
+        valueAnimator.setInterpolator(new LinearInterpolator());
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                controlLayout.setBackgroundColor((Integer)valueAnimator.getAnimatedValue());
+
+            }
+        });
+        valueAnimator.start();
+        //set status bar colour
+        getWindow().setStatusBarColor(pixel);
 
     }
 

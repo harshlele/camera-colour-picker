@@ -25,10 +25,54 @@
         android:layout_gravity="bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:alpha="0.7"
-        android:background="@color/colorPrimary">
+        android:background="@color/colorPrimary"
+        android:alpha="0.9"
+        >
+
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:id="@+id/options_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            >
+
+            <ImageButton
+                android:id="@+id/btn_switch_camera"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:src="@drawable/ic_switch_camera_24dp"
+                android:padding="8dp"
+                android:background="?android:selectableItemBackground"
+                />
+
+            <ImageButton
+                android:id="@+id/btn_flash"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/ic_flash_on_24dp"
+                android:background="?android:selectableItemBackground"
+                />
+
+            <Spinner
+                android:id="@+id/wb_spinner"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_width="wrap_content"
+                android:entries="@array/wb_array"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+
+        </LinearLayout>
 
         <TextView
+            android:layout_below="@+id/options_layout"
             android:id="@+id/text_color_hex"
             android:layout_margin="8dp"
             android:layout_marginBottom="0dp"
@@ -38,6 +82,29 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             android:textColor="@android:color/white"
             />
+
+
+        <TextView
+            android:id="@+id/text_color_rgb"
+            android:layout_margin="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_alignBaseline="@+id/text_color_hex"
+            android:layout_toEndOf="@+id/text_color_hex"
+            android:textColor="@android:color/white"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/text_color_hsv"
+            android:layout_margin="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_alignBaseline="@+id/text_color_rgb"
+            android:layout_toEndOf="@+id/text_color_rgb"
+            android:textColor="@android:color/white"
+            android:text="" />
 
         <TextView
             android:id="@+id/text_copy"
@@ -50,27 +117,7 @@
             android:layout_below="@id/text_color_hex"
             />
 
-        <TextView
-            android:id="@+id/text_color_rgb"
-            android:layout_margin="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:layout_alignBaseline="@+id/text_color_hex"
-            android:layout_toEndOf="@+id/text_color_hex"
-            android:textColor="@android:color/white"
-            android:text="" />
 
-        <TextView
-            android:id="@+id/text_color_hsv"
-            android:layout_margin="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:layout_alignBaseline="@+id/text_color_rgb"
-            android:layout_toEndOf="@+id/text_color_rgb"
-            android:textColor="@android:color/white"
-            android:text="" />
 
     </RelativeLayout>
 </FrameLayout>
