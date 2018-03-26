@@ -7,12 +7,18 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v8.renderscript.RenderScript;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -54,10 +60,11 @@ public class MainActivity extends AppCompatActivity {
     //views
     private RelativeLayout controlLayout;
     private TextView colorValHexText,colorValRgbText;
-    private ImageButton switchCamBtn, flashBtn, saveBtn;
+    private ImageButton switchCamBtn, flashBtn, saveBtn,historyBtn;
     private Spinner whiteBalanceSpinner;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private Menu navMenu;
 
     private Facing currentCameraFacing = Facing.BACK;
     private Flash currentFlash = Flash.OFF;
@@ -82,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         whiteBalanceSpinner = findViewById(R.id.wb_spinner);
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
+        historyBtn = findViewById(R.id.btn_history);
 
 
         //map gestures
@@ -187,31 +195,95 @@ public class MainActivity extends AppCompatActivity {
                 //get the list of colors from the shared preferences
                 Gson gson = new Gson();
                 String json = pref.getString("list", null);
-                List<String> colors;
+                List<Integer> colors;
                 if(json != null) {
-                    Type type = new TypeToken<ArrayList<String>>() {}.getType();
+                    Type type = new TypeToken<ArrayList<Integer>>() {}.getType();
                     colors = gson.fromJson(json, type);
                 }
                 else colors = new ArrayList<>();
                 //if there are 25 or above items, remove the first one
                 if(colors.size() >= 25) colors.remove(0);
                 //add the current value
-                colors.add(String.valueOf(currentSelectedColor));
+                colors.add(currentSelectedColor);
                 //generate the new json
                 String newJson = gson.toJson(colors);
                 //save it to the shared preferences
-                editor.putString("list", json);
+                editor.putString("list", newJson);
                 editor.apply();
 
                 Toast.makeText(getApplicationContext(),String.valueOf("Colour saved"),Toast.LENGTH_SHORT).show();
 
+                refreshHistoryMenu();
+
             }
         });
 
+        //open the drawer
+        historyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawerLayout.openDrawer(Gravity.END);
+            }
+        });
 
+        //refresh the history menu
+        refreshHistoryMenu();
 
+        //When a saved color is tapped, copy it to the clipboard
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if(item.getItemId() != Menu.NONE){
+                    String val = item.getTitle().toString();
+                    copyToClipboard(val);
+                    Toast.makeText(getApplicationContext(),val + " copied", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                else return false;
+            }
+        });
 
     }
+
+
+    //clear out the history menu and refill it
+    private void refreshHistoryMenu(){
+        navMenu = navigationView.getMenu();
+        //clear the menu
+        navMenu.clear();
+        //Add the
+        navMenu.add(R.id.text_tap,Menu.NONE,Menu.NONE,"History(Tap to Copy)");
+
+        //get the shared preferences
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("colors",MODE_PRIVATE);
+
+        //get the list of colors from the shared preferences
+        Gson gson = new Gson();
+        String json = pref.getString("list", null);
+        List<Integer> colors;
+
+        if(json != null) {
+            Type type = new TypeToken<ArrayList<Integer>>() {}.getType();
+            //Get the color list, and add it to the nav menu
+            colors = gson.fromJson(json, type);
+            for(int i = 0; i < colors.size(); i++ ){
+
+                int c = colors.get(i);
+                //get the hex color and set it as item title
+                String hexColor = String.format("#%06X", (0xFFFFFF & c));
+                MenuItem m = navMenu.add(R.id.color_list,c,i,hexColor);
+                //make the icon a circle of the color
+                ShapeDrawable bgShape = new ShapeDrawable(new OvalShape());
+                bgShape.setIntrinsicWidth(24);
+                bgShape.setIntrinsicHeight(24);
+                bgShape.setColorFilter(c, PorterDuff.Mode.SRC_IN);
+                //set icon
+                m.setIcon(bgShape);
+            }
+
+        }
+    }
+
 
     //find the colour code, and show it on the screen
     private void findColor(){
@@ -252,10 +324,7 @@ public class MainActivity extends AppCompatActivity {
         colorValHexText.setText(hexColor);
         colorValRgbText.setText(rgbColor);
 
-        //copy hex value to clipboard
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("color", hexColor);
-        clipboard.setPrimaryClip(clip);
+        copyToClipboard(hexColor);
 
         //animate to new colour
         ValueAnimator valueAnimator = ValueAnimator.ofArgb(currentSelectedColor, pixel);
@@ -276,6 +345,14 @@ public class MainActivity extends AppCompatActivity {
         currentSelectedColor = pixel;
     }
 
+
+    private void copyToClipboard(String text){
+        //copy hex value to clipboard
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("color", text);
+        clipboard.setPrimaryClip(clip);
+
+    }
 
     @Override
     protected void onResume() {

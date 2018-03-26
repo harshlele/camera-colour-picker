@@ -117,7 +117,15 @@
             android:layout_below="@id/text_color_hex"
             />
 
-
+        <ImageButton
+            android:id="@+id/btn_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/text_color_hex"
+            android:layout_alignParentEnd="true"
+            android:padding="8dp"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/ic_history_24dp" />
 
 
     </RelativeLayout>
