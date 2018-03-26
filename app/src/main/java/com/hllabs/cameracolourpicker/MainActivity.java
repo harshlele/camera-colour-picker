@@ -4,12 +4,13 @@ import android.animation.ValueAnimator;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v8.renderscript.RenderScript;
 import android.view.MotionEvent;
@@ -20,7 +21,10 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.Facing;
 import com.otaliastudios.cameraview.Flash;
@@ -29,6 +33,10 @@ import com.otaliastudios.cameraview.FrameProcessor;
 import com.otaliastudios.cameraview.Gesture;
 import com.otaliastudios.cameraview.GestureAction;
 import com.otaliastudios.cameraview.WhiteBalance;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.github.silvaren.easyrs.tools.Nv21Image;
 
@@ -45,28 +53,35 @@ public class MainActivity extends AppCompatActivity {
     float touchX,touchY;
     //views
     private RelativeLayout controlLayout;
-    private TextView colorValHexText,colorValRgbText,colorValHsvText;
-    private ImageButton switchCamBtn, flashBtn;
+    private TextView colorValHexText,colorValRgbText;
+    private ImageButton switchCamBtn, flashBtn, saveBtn;
     private Spinner whiteBalanceSpinner;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     private Facing currentCameraFacing = Facing.BACK;
     private Flash currentFlash = Flash.OFF;
     private WhiteBalance currentWb = WhiteBalance.AUTO;
 
+    //currently selected color
+    private int currentSelectedColor = Color.WHITE;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.screen_main);
 
         //initialise views
         controlLayout = findViewById(R.id.control_layout);
         colorValHexText = findViewById(R.id.text_color_hex);
         colorValRgbText = findViewById(R.id.text_color_rgb);
-        colorValHsvText = findViewById(R.id.text_color_hsv);
         cameraView = findViewById(R.id.camera);
         switchCamBtn = findViewById(R.id.btn_switch_camera);
         flashBtn = findViewById(R.id.btn_flash);
+        saveBtn = findViewById(R.id.btn_save);
         whiteBalanceSpinner = findViewById(R.id.wb_spinner);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
 
 
         //map gestures
@@ -161,6 +176,41 @@ public class MainActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> adapterView) {}
         });
 
+        //save the currently selected colour to shared preferences
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //get the shared preferences
+                SharedPreferences pref = getApplicationContext().getSharedPreferences("colors",MODE_PRIVATE);
+                SharedPreferences.Editor editor = pref.edit();
+
+                //get the list of colors from the shared preferences
+                Gson gson = new Gson();
+                String json = pref.getString("list", null);
+                List<String> colors;
+                if(json != null) {
+                    Type type = new TypeToken<ArrayList<String>>() {}.getType();
+                    colors = gson.fromJson(json, type);
+                }
+                else colors = new ArrayList<>();
+                //if there are 25 or above items, remove the first one
+                if(colors.size() >= 25) colors.remove(0);
+                //add the current value
+                colors.add(String.valueOf(currentSelectedColor));
+                //generate the new json
+                String newJson = gson.toJson(colors);
+                //save it to the shared preferences
+                editor.putString("list", json);
+                editor.apply();
+
+                Toast.makeText(getApplicationContext(),String.valueOf("Colour saved"),Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+
+
+
     }
 
     //find the colour code, and show it on the screen
@@ -194,30 +244,21 @@ public class MainActivity extends AppCompatActivity {
         //get pixel at co-ordinates, and convert it into hex codes
         int pixel = outputBitmap.getPixel(scaledX,scaledY);
 
-
+        //get hex,rgb colour values
         String hexColor = String.format("#%06X", (0xFFFFFF & pixel));
         String rgbColor = "RGB(" + Color.red(pixel) + "," + Color.green(pixel) + "," + Color.blue(pixel) + ")";
-        float[] hsv = new float[3];
-        Color.colorToHSV(pixel,hsv);
-        String hsvColor = "HSV(" + (int)hsv[0] + "," + (int)hsv[1] + "," + (int)hsv[2] + ")";
 
         //set color text
         colorValHexText.setText(hexColor);
         colorValRgbText.setText(rgbColor);
-        colorValHsvText.setText(hsvColor);
 
         //copy hex value to clipboard
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("color", hexColor);
         clipboard.setPrimaryClip(clip);
 
-        //get current background colour
-        int currentColor = Color.TRANSPARENT;
-        Drawable background = controlLayout.getBackground();
-        if (background instanceof ColorDrawable)
-            currentColor = ((ColorDrawable) background).getColor();
         //animate to new colour
-        ValueAnimator valueAnimator = ValueAnimator.ofArgb(currentColor, pixel);
+        ValueAnimator valueAnimator = ValueAnimator.ofArgb(currentSelectedColor, pixel);
         valueAnimator.setDuration(500);
         valueAnimator.setInterpolator(new LinearInterpolator());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -231,6 +272,8 @@ public class MainActivity extends AppCompatActivity {
         //set status bar colour
         getWindow().setStatusBarColor(pixel);
 
+        //set it as the current color
+        currentSelectedColor = pixel;
     }
 
 

@@ -37,6 +37,8 @@
             android:layout_height="wrap_content"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
+            android:focusable="true"
+            android:clickable="true"
             >
 
             <ImageButton
@@ -68,6 +70,15 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
+            <ImageButton
+                android:id="@+id/btn_save"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/ic_save_24dp"
+                android:background="?android:selectableItemBackground"
+                />
+
 
         </LinearLayout>
 
@@ -96,17 +107,6 @@
             android:text="" />
 
         <TextView
-            android:id="@+id/text_color_hsv"
-            android:layout_margin="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:layout_alignBaseline="@+id/text_color_rgb"
-            android:layout_toEndOf="@+id/text_color_rgb"
-            android:textColor="@android:color/white"
-            android:text="" />
-
-        <TextView
             android:id="@+id/text_copy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -116,6 +116,7 @@
             android:textColor="@android:color/white"
             android:layout_below="@id/text_color_hex"
             />
+
 
 
 
