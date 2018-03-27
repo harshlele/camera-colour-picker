@@ -266,12 +266,13 @@ public class MainActivity extends AppCompatActivity {
             Type type = new TypeToken<ArrayList<Integer>>() {}.getType();
             //Get the color list, and add it to the nav menu
             colors = gson.fromJson(json, type);
-            for(int i = 0; i < colors.size(); i++ ){
+
+            for(int i = colors.size() - 1; i >= 0; i-- ){
 
                 int c = colors.get(i);
                 //get the hex color and set it as item title
                 String hexColor = String.format("#%06X", (0xFFFFFF & c));
-                MenuItem m = navMenu.add(R.id.color_list,c,i,hexColor);
+                MenuItem m = navMenu.add(R.id.color_list,c,colors.size() - i,hexColor);
                 //make the icon a circle of the color
                 ShapeDrawable bgShape = new ShapeDrawable(new OvalShape());
                 bgShape.setIntrinsicWidth(24);
